@@ -3,7 +3,7 @@ var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 var path = require('path');
 var env = require('yargs').argv.mode;
 
-var libraryName = 'Library';
+var libraryName = 'ao3';
 
 var plugins = [], outputFile;
 
@@ -25,7 +25,12 @@ var config = {
     umdNamedDefine: true
   },
   module: {
+    noParse: /node_modules\/json-schema\/lib\/validate\.js/,
     loaders: [
+      {
+        test: /\.json$/,
+        loader: 'json'
+      },
       {
         test: /(\.jsx|\.js)$/,
         loader: 'babel',
@@ -33,7 +38,7 @@ var config = {
       },
       {
         test: /(\.jsx|\.js)$/,
-        loader: "eslint-loader",
+        loader: 'eslint-loader',
         exclude: /node_modules/
       }
     ]
