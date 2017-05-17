@@ -24,8 +24,8 @@ var config = {
     path: __dirname + '/lib',
     filename: outputFile,
     library: libraryName,
-    libraryTarget: 'umd',
-    umdNamedDefine: true
+    // libraryTarget: 'umd',
+    // umdNamedDefine: true
   },
   module: {
     noParse: /node_modules\/json-schema\/lib\/validate\.js/,

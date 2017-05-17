@@ -4,12 +4,14 @@
   "description": "webscraper that produces a json api for archiveofourown.org",
   "main": "src/index.js",
   "scripts": {
+    "babel": "./node_modules/.bin/babel src/index.js --out-file lib/ao3.js --source-maps inline",
     "build": "webpack --mode=build",
     "dev": "webpack --progress --colors --watch --mode=dev",
     "test": "mocha --compilers js:babel-core/register --colors -w .\\test\\compiled.spec.js"
   },
   "devDependencies": {
     "babel": "6.3.13",
+    "babel-cli": "^6.24.1",
     "babel-core": "6.1.18",
     "babel-eslint": "5.0.0",
     "babel-loader": "6.1.0",
