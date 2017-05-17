@@ -5,10 +5,13 @@ var env = require('yargs').argv.mode;
 
 var libraryName = 'ao3';
 
-var plugins = [], outputFile;
+var plugins = [new webpack.DefinePlugin({
+  'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+})];
+var outputFile;
 
 if (env === 'build') {
-  plugins.push(new UglifyJsPlugin({ minimize: true }));
+  // plugins.push(new UglifyJsPlugin());
   outputFile = libraryName + '.min.js';
 } else {
   outputFile = libraryName + '.js';
@@ -34,7 +37,7 @@ var config = {
       {
         test: /(\.jsx|\.js)$/,
         loader: 'babel',
-        exclude: /(node_modules|bower_components)/
+        exclude: /node_modules/
       },
       {
         test: /(\.jsx|\.js)$/,
@@ -47,7 +50,11 @@ var config = {
     root: path.resolve('./src'),
     extensions: ['', '.js']
   },
-  plugins: plugins
+  plugins: plugins,
+  node: {
+    global: false,
+    process: false
+  }
 };
 
 module.exports = config;

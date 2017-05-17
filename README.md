@@ -1,82 +1,69 @@
-# Webpack library starter
+# [WIP] AO3.js
 
-Webpack based boilerplate for producing libraries (Input: ES6, Output: universal library)
+Unofficial client library for Archive of Our Own.
 
-## Features
+# Usage
 
-* Webpack based.
-* ES6 as a source.
-* Exports in a [umd](https://github.com/umdjs/umd) format so your library works everywhere.
-* ES6 test setup with [Mocha](http://mochajs.org/) and [Chai](http://chaijs.com/).
-* Linting with [ESLint](http://eslint.org/).
+Exports a class with a bunch of static methods
 
-## Process
+## Authentication
+
+*Note: you have access to most `GET` requests even if you don't have an ao3 account.*
+
+Basic `GET` requests do not require authentication but certain actions (such as viewing works with adult content) require creating a session. The client takes care of this for you. Making `POST` requests, however, requires an account and authentication.
 
 ```
-ES6 source files
-       |
-       |
-    webpack
-       |
-       +--- babel, eslint
-       |
-  ready to use
-     library
-  in umd format
+import Client from 'ao3';
+
+Client.setCredentials({
+  user: 'nerdbrogirl',
+  password: 'everythingmustbegay'
+});
+
+// alternatively
+
+Client.login({
+  user: 'tumblrina',
+  password: 'femslashfemslashfemslash'
+}).then(/...); // returns request data
+
 ```
 
-*Have in mind that you have to build your library before publishing. The files under the `lib` folder are the ones that should be distributed.*
+Requests that require authentication internally call `login()` with the values you set in `setCredentials()` on an as needed basis. Directly calling `login()` will create a session on archiveofourown.org and automatically configure your request headers so all future requests are authenticated. It also returns a promise with the request data in case you want to use that info for anything. Either way works.
 
-## Getting started
+## Methods
 
-1. Setting up the name of your library
-  * Open `webpack.config.js` file and change the value of `libraryName` variable.
-  * Open `package.json` file and change the value of `main` property so it matches the name of your library.
-2. Build your library
-  * Run `npm install` to get the project's dependencies
-  * Run `npm run build` to produce minified version of your library.
-3. Development mode
-  * Having all the dependencies installed run `npm run dev`. This command will generate an non-minified version of your library and will run a watcher so you get the compilation on file change.
-4. Running the tests
-  * Run `npm run test`
+### worksFilter()
 
-## Scripts
+Takes two arguments, the tag you are searching for and query parameters. Returns a filtered list of works.
 
-* `npm run build` - produces production version of your library under the `lib` folder
-* `npm run dev` - produces development version of your library and runs a watcher
-* `npm run test` - well ... it runs the tests :)
-
-## Readings
-
-* [Start your own JavaScript library using webpack and ES6](http://krasimirtsonev.com/blog/article/javascript-library-starter-using-webpack-es6)
-
-## Misc
-
-### An example of using dependencies that shouldn’t be resolved by webpack, but should become dependencies of the resulting bundle
-
-In the following example we are excluding React and Lodash:
-
-```js
-{
-  devtool: 'source-map',
-  output: {
-    path: '...',
-    libraryTarget: 'umd',
-    library: '...'
-  },
-  entry: '...',
-  ...
-  externals: {
-    react: 'react'
-    // Use more complicated mapping for lodash.
-    // We need to access it differently depending
-    // on the environment.
-    lodash: {
-      commonjs: 'lodash',
-      commonjs2: 'lodash',
-      amd: '_',
-      root: '_'
-    }
-  }
+Example:
+```
+try {
+  const { data } = await Library.worksFilter('Overwatch (Video Game)', {
+    query: 'lol',
+    page: 2
+  });
+  console.log(data);
+} catch (err) {
+  console.error(err);
 }
+
 ```
+
+### work()
+
+Takes a work ```id``` as a parameter.
+
+Example
+```
+try {
+  const { data } = await Client.work('9249503');
+  console.log(data);
+} catch (err) {
+  console.error(err);
+}
+
+```
+
+More to come...
