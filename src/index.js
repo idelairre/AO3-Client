@@ -20,21 +20,9 @@ function defaults(object, defaultObj) {
   return object;
 }
 
-// function isNode() {
-//   return Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
-// }
-//
-// function getDefaultAdapter() {
-//   let adapter;
-//   if (isNode()) {
-//     // For node use HTTP adapter
-//     adapter = require('axios/lib/adapters/http');
-//   } else {
-//     // For browsers use XHR adapter
-//     adapter = require('axios/lib/adapters/xhr');
-//   }
-//   return adapter;
-// }
+function isNode() {
+  return Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
+}
 
 axiosCookieJarSupport(axios);
 
@@ -817,6 +805,10 @@ export default class AO3 {
         };
       }).get();
 
+      text = text.reduce((acc, val) => {
+        return val;
+      }, {});
+
       return {
         meta: AO3.getResponseMeta(response),
         data: {
@@ -861,14 +853,7 @@ export default class AO3 {
             'Content-Type': 'text/javascript; charset=utf-8'
           });
         });
-        const comments = await Promise.all(promises);
-        // const comments = await instance.get(`${AO3.site}/comments/show_comments?chapter_id=21083225`, {
-        //     Accept: '*/*;q=0.5, text/javascript, application/javascript, application/ecmascript, application/x-ecmascript',
-        //     'Accept-Encoding': 'gzip deflate, sdch',
-        //     'Content-Type': 'text/javascript; charset=utf-8',
-        //     ...settings
-        //   });
-        return comments;
+        return await Promise.all(promises);
       }
     } catch (err) {
       return err;
