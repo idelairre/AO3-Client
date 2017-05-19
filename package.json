@@ -1,6 +1,6 @@
 {
   "name": "ao3",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "webscraper that produces a json api for archiveofourown.org",
   "main": "lib/ao3.js",
   "scripts": {

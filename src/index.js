@@ -806,7 +806,9 @@ export default class AO3 {
       }).get();
 
       text = text.reduce((acc, val) => {
-        return val;
+        const [key] = Object.keys(val);
+        acc[key] = val[key];
+        return acc;
       }, {});
 
       return {

@@ -67,6 +67,7 @@ describe('Given an instance of my library', function () {
       try {
         const response = await Library.work('9249503');
         expect(response.data.text).to.be.an('object');
+        expect(Object.keys(response.data.text)).to.have.length(6);
         expect(response.data.stats.chapters).to.equal('6/6');
         expect(response.data.stats.language).to.equal('English');
         done();
@@ -313,16 +314,16 @@ describe('Given an instance of my library', function () {
   //   });
   // });
 
-  describe('when I call workComment', function () {
-    it ('it should fetch comments by work id', async function (done) {
-      this.timeout(15000);
-      try {
-        const response = await Library.workComments('9249503');
-        console.log(response);
-        done();
-      } catch (err) {
-        done(err);
-      }
-    });
-  });
+  // describe('when I call workComment', function () {
+  //   it ('it should fetch comments by work id', async function (done) {
+  //     this.timeout(15000);
+  //     try {
+  //       const response = await Library.workComments('9249503');
+  //       console.log(response);
+  //       done();
+  //     } catch (err) {
+  //       done(err);
+  //     }
+  //   });
+  // });
 });
