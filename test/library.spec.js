@@ -49,10 +49,11 @@ describe('Given an instance of my library', function () {
 
       try {
         const { data } = await Library.work('9249503');
-
-        const $ = cheerio.load(data.text[Object.keys(data.text)[0]]);
+        const chapterKey = Object.keys(data.text)[0];
+        const $ = cheerio.load(data.text[chapterKey]);
         const chapterHeading = $('h3.landmark').text();
         expect(chapterHeading).to.not.eq('Chapter Text');
+        expect(chapterHeading).to.eq(chapterKey);
         done();
       } catch (err) {
         done(err);

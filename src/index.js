@@ -807,9 +807,9 @@ export default class AO3 {
     if (parseInt(chapters, 10) > 1) {
       const title = strip($('div#workskin').find('div.preface').find('h2.title').text());
       let text = $('div#chapters').children('.chapter').map(function (i, el) {
-        $(el).find('h3.landmark').replaceWith(`<h3 class="landmark heading">${chapterTitle}</h3>`);
-        const content = $(el).find('div.userstuff').html();
         const chapterTitle = strip($(el).find('h3.title').text());
+        $(el).find('h3.landmark').replaceWith(`<h3 class="landmark heading">${chapterTitle}</h3>`); // maybe make this optional
+        const content = $(el).find('div.userstuff').html();
         return {
           [chapterTitle]: content
         };
