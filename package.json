@@ -1,13 +1,14 @@
 {
   "name": "ao3",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "webscraper that produces a json api for archiveofourown.org",
   "main": "lib/ao3.js",
   "scripts": {
     "babel": "./node_modules/.bin/babel src/index.js --out-file lib/ao3.js --source-maps inline",
     "build": "webpack --mode=build",
     "dev": "webpack --progress --colors --watch --mode=dev",
-    "test": "mocha --compilers js:babel-core/register --colors -w .\\test\\library.spec.js"
+    "test:umd": "karma start .\\karma\\karma.config.development.js",
+    "test:node": "mocha --compilers js:babel-core/register --colors -w .\\test\\library.spec.js"
   },
   "devDependencies": {
     "babel": "6.3.13",
@@ -25,6 +26,15 @@
     "eslint": "1.7.2",
     "eslint-loader": "1.1.0",
     "json-loader": "^0.5.4",
+    "karma": "latest",
+    "karma-chrome-launcher": "latest",
+    "karma-firefox-launcher": "latest",
+    "karma-htmlfile-reporter": "latest",
+    "karma-mocha": "latest",
+    "karma-phantomjs-launcher": "latest",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-teamcity-reporter": "latest",
+    "karma-webpack": "latest",
     "mocha": "2.3.4",
     "webpack": "1.12.9",
     "yargs": "3.32.0"

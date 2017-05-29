@@ -1,9 +1,15 @@
 import chai from 'chai';
+import cheerio from 'cheerio';
 import tough, { Cookie } from 'tough-cookie';
 import Library from '../src/index.js';
 import qs from 'qs';
 import CREDENTIALS from '../credentials.json';
 import 'babel-polyfill';
+
+const CONTENT_WARNINGS = ['Creator Chose Not To Use Archive Warnings', 'Graphic Depictions Of Violence', 'Major Character Death', 'No Archive Warnings Apply', 'Rape/Non-Con', 'Underage'];
+const RELATIONSHIPS = ['F/F', 'F/M', 'Gen', 'M/M', 'Multi', 'Other'];
+const CONTENT_RATINGS = ['Not Rated', 'General Audiences', 'Teen And Up Audiences', 'Mature', 'Explicit'];
+const FINISHED = ['Complete Work', 'Work in Progress'];
 
 chai.expect();
 
@@ -24,6 +30,7 @@ describe('Given an instance of my library', function () {
   describe('when I call login', function () {
     it ('should return response headers with a "user_credentials" cookie', async function (done) {
       this.timeout(15000);
+
       try {
         const response = await Library.login(CREDENTIALS);
         const cookieString = response.meta.config.headers.Cookie;
@@ -36,31 +43,68 @@ describe('Given an instance of my library', function () {
     });
   });
 
-  // describe('when I call worksFilter', function () {
-  //   it ('should return a filtered list of works', async function (done) {
-  //     this.timeout(15000);
-  //
-  //     const mostExtremeQuery = 'http://archiveofourown.org/works?utf8=%E2%9C%93&commit=Sort+and+Filter&work_search%5Bsort_column%5D=revised_at&work_search%5Brating_ids%5D%5B%5D=10&work_search%5Bwarning_ids%5D%5B%5D=14&work_search%5Bwarning_ids%5D%5B%5D=16&work_search%5Bwarning_ids%5D%5B%5D=17&work_search%5Bwarning_ids%5D%5B%5D=18&work_search%5Bwarning_ids%5D%5B%5D=20&work_search%5Bwarning_ids%5D%5B%5D=19&work_search%5Bcategory_ids%5D%5B%5D=23&work_search%5Bcategory_ids%5D%5B%5D=22&work_search%5Bcategory_ids%5D%5B%5D=116&work_search%5Bcategory_ids%5D%5B%5D=21&work_search%5Bcategory_ids%5D%5B%5D=2246&work_search%5Bcategory_ids%5D%5B%5D=24&work_search%5Bfandom_ids%5D%5B%5D=721553&work_search%5Bfandom_ids%5D%5B%5D=55873&work_search%5Bcharacter_ids%5D%5B%5D=989133&work_search%5Bcharacter_ids%5D%5B%5D=859732&work_search%5Brelationship_ids%5D%5B%5D=976131&work_search%5Brelationship_ids%5D%5B%5D=893104&work_search%5Bother_tag_names%5D=Lotta+%28Charlie+and+Lola%29&work_search%5Bquery%5D=lol&work_search%5Blanguage_id%5D=1&work_search%5Bcomplete%5D=0&work_search%5Bcomplete%5D=1&tag_id=Shingeki+no+Kyojin+%7C+Attack+on+Titan';
-  //     // console.log(qs.parse(mostExtremeQuery));
-  //
-  //     const response = await Library.worksFilter('Overwatch (Video Game)');
-  //     // expect(response).to.be.a('object');
-  //     done();
-  //   });
-  //
-  //   it ('should return a filtered list of works based on filter params', async function (done) {
-  //     this.timeout(15000);
-  //
-  //     const response = await Library.worksFilter('Overwatch (Video Game)', {
-  //       query: 'lol',
-  //       page: 2
-  //     });
-  //     // expect(response).to.be.a('object');
-  //     done();
-  //   });
-  // });
+  describe.only('parseChapters', function () {
+    it ('should replace "Chapter Title" with the actual chapter title', async function (done) {
+      this.timeout(15000);
 
-  describe.only('when I call work', function () {
+      try {
+        const { data } = await Library.work('9249503');
+
+        const $ = cheerio.load(data.text[Object.keys(data.text)[0]]);
+        const chapterHeading = $('h3.landmark').text();
+        expect(chapterHeading).to.not.eq('Chapter Text');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
+  describe('when I call worksFilter', function () {
+    it ('should return a filtered list of works', async function (done) {
+      this.timeout(15000);
+
+      const mostExtremeQuery = 'http://archiveofourown.org/works?utf8=%E2%9C%93&commit=Sort+and+Filter&work_search%5Bsort_column%5D=revised_at&work_search%5Brating_ids%5D%5B%5D=10&work_search%5Bwarning_ids%5D%5B%5D=14&work_search%5Bwarning_ids%5D%5B%5D=16&work_search%5Bwarning_ids%5D%5B%5D=17&work_search%5Bwarning_ids%5D%5B%5D=18&work_search%5Bwarning_ids%5D%5B%5D=20&work_search%5Bwarning_ids%5D%5B%5D=19&work_search%5Bcategory_ids%5D%5B%5D=23&work_search%5Bcategory_ids%5D%5B%5D=22&work_search%5Bcategory_ids%5D%5B%5D=116&work_search%5Bcategory_ids%5D%5B%5D=21&work_search%5Bcategory_ids%5D%5B%5D=2246&work_search%5Bcategory_ids%5D%5B%5D=24&work_search%5Bfandom_ids%5D%5B%5D=721553&work_search%5Bfandom_ids%5D%5B%5D=55873&work_search%5Bcharacter_ids%5D%5B%5D=989133&work_search%5Bcharacter_ids%5D%5B%5D=859732&work_search%5Brelationship_ids%5D%5B%5D=976131&work_search%5Brelationship_ids%5D%5B%5D=893104&work_search%5Bother_tag_names%5D=Lotta+%28Charlie+and+Lola%29&work_search%5Bquery%5D=lol&work_search%5Blanguage_id%5D=1&work_search%5Bcomplete%5D=0&work_search%5Bcomplete%5D=1&tag_id=Shingeki+no+Kyojin+%7C+Attack+on+Titan';
+      // console.log(qs.parse(mostExtremeQuery));
+
+      try {
+        const response = await Library.worksFilter('Overwatch (Video Game)');
+
+        expect(response).to.be.a('object');
+        expect(response.data.items).to.have.length(20);
+
+        const [work] = response.data.items;
+
+        expect(CONTENT_WARNINGS).to.include(work.required_tags.content_warnings);
+        expect(RELATIONSHIPS).to.include(work.required_tags.relationships);
+        expect(CONTENT_RATINGS).to.include(work.required_tags.content_rating);
+        expect(FINISHED).to.include(work.required_tags.finished);
+
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+
+    it ('should return a filtered list of works based on filter params', async function (done) {
+      this.timeout(15000);
+
+      try {
+        const response = await Library.worksFilter('Overwatch (Video Game)', {
+          page: 2
+        });
+
+        expect(response).to.be.a('object');
+        expect(response.data.items).to.have.length(20);
+
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
+  describe('when I call work', function () {
     it ('should return a filtered list of works based on filter params', async function (done) {
       this.timeout(15000);
 
@@ -239,7 +283,55 @@ describe('Given an instance of my library', function () {
     });
   });
 
-  describe('when I call tagsAutocomplete', function () {
+  describe('when I call autocomplete', function () {
+    it ('it should return character tags', async function (done) {
+      this.timeout(15000);
+
+      try {
+        const response = await Library.autocomplete('sombra', {
+          type: 'character'
+        });
+
+        expect(response.status).to.equal(200);
+        expect(response).to.have.property('data');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+
+    it ('it should return relationship tags', async function (done) {
+      this.timeout(15000);
+
+      try {
+        const response = await Library.autocomplete('sombra', {
+          type: 'relationship'
+        });
+
+        expect(response.status).to.equal(200);
+        expect(response).to.have.property('data');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+
+    it ('it should return relationship tags', async function (done) {
+      this.timeout(15000);
+
+      try {
+        const response = await Library.autocomplete('overwatch', {
+          type: 'fandom'
+        });
+
+        expect(response.status).to.equal(200);
+        expect(response).to.have.property('data');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+
     it ('it should return freeform tags', async function (done) {
       this.timeout(15000);
 

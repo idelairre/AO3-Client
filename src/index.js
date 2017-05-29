@@ -3,6 +3,12 @@ import axiosCookieJarSupport from '@3846masa/axios-cookiejar-support';
 import cheerio from 'cheerio';
 import qs from 'qs';
 
+// let cheerio;
+
+function isNode() {
+  return Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
+}
+
 function strip(string) {
   return string.replace(/\r?\n|\r/, '').trim();
 }
@@ -20,9 +26,11 @@ function defaults(object, defaultObj) {
   return object;
 }
 
-function isNode() {
-  return Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
-}
+// if (isNode()) {
+//   cheerio = require('cheerio');
+// } else {
+//   // use jquery
+// }
 
 axiosCookieJarSupport(axios);
 
@@ -240,6 +248,7 @@ export default class AO3 {
     if (!AO3.user) {
       await AO3.login(AO3.credentials);
     }
+
     const token = await AO3.getToken();
     const params = qs.stringify({
       utf8: '✓',
@@ -297,6 +306,7 @@ export default class AO3 {
     if (!AO3.user) {
       await AO3.login(AO3.credentials);
     }
+
     const endpoint = `${AO3.site}/users/${AO3.user}/preferences`;
     const response = await instance.get(endpoint, settings);
     const $ = cheerio.load(response.data);
@@ -563,6 +573,7 @@ export default class AO3 {
     if (!AO3.user) {
       await AO3.login(AO3.credentials);
     }
+
     const token = await AO3.getToken();
     const pseudId = await AO3.getPseudId(AO3.user);
     const params = qs.stringify({
@@ -618,15 +629,14 @@ export default class AO3 {
     }
 
     const token = await AO3.getToken();
-    const preferences = {
+    const params = qs.stringify({
       utf8: '✓',
       authenticity_token: token,
       subscription: {
         subscribable_id: workId,
         subscribable_type: 'Work'
       }
-    };
-    const params = qs.stringify(preferences);
+    });
     const endpoint = `${AO3.site}/users/${AO3.user}/subscriptions`;
     try {
       return await instance.post(endpoint, params, settings);
@@ -705,8 +715,7 @@ export default class AO3 {
     });
 
     try {
-      const response = await instance.post(endpoint, params, settings);
-      return response;
+      return await instance.post(endpoint, params, settings);
     } catch (err) {
       return err;
     }
@@ -798,6 +807,7 @@ export default class AO3 {
     if (parseInt(chapters, 10) > 1) {
       const title = strip($('div#workskin').find('div.preface').find('h2.title').text());
       let text = $('div#chapters').children('.chapter').map(function (i, el) {
+        $(el).find('h3.landmark').replaceWith(`<h3 class="landmark heading">${chapterTitle}</h3>`);
         const content = $(el).find('div.userstuff').html();
         const chapterTitle = strip($(el).find('h3.title').text());
         return {
@@ -895,11 +905,11 @@ export default class AO3 {
   // applies collections filters
   collectionsSearch() { }
 
-  static formatWorksFilterEndpoint(query) {
+  static _formatWorksFilterEndpoint(query) {
     let endpoint = `${AO3.site}/works?utf8=%E2%9C%93`;
-    const { tag_id } = query;
+    const { tag_id, term } = query;
     delete query.tag_id;
-    query = qs.stringify({ commit: 'Sort and Filter', work_search: query, tag_id });
+    query = qs.stringify({ commit: 'Sort and Filter', work_search: term, tag_id });
     return `${endpoint}&${query}`;
   }
 
@@ -930,7 +940,7 @@ export default class AO3 {
   static async worksFilter(tag, query = {}) {
     try {
       Object.assign(query, { tag_id: tag });
-      const endpoint = AO3.formatWorksFilterEndpoint(query);
+      const endpoint = AO3._formatWorksFilterEndpoint(query);
 
       const response = await instance.get(endpoint, {
         timeout: 3000
@@ -956,7 +966,7 @@ export default class AO3 {
     }
   }
 
-  static formatWorksSearchEndpoint(query, page) {
+  static _formatWorksSearchEndpoint(query, page) {
     query = qs.stringify({ work_search: query });
     let endpoint = `${AO3.site}/works/search`;
     if (page === 0) {
@@ -975,7 +985,8 @@ export default class AO3 {
       delete query.page;
     }
 
-    const endpoint = AO3.formatWorksSearchEndpoint(query, page);
+    const endpoint = AO3._formatWorksSearchEndpoint(query, page);
+
     try {
       const response = await instance.get(endpoint);
       const $ = cheerio.load(response.data);
@@ -1023,7 +1034,7 @@ export default class AO3 {
 
   // content rating, relationships, content warnings, finished?
   static parseRequiredTags($, el) {
-    const [content_rating, relationships, content_warnings, finished] = $(el).find('ul.required-tags').find('li').map((i, el) => {
+    const [content_rating, content_warnings, relationships, finished] = $(el).find('ul.required-tags').find('li').map((i, el) => {
       return $(el).find('span').attr('title');
     }).get();
 
