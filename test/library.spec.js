@@ -6,7 +6,7 @@ import qs from 'qs';
 import CREDENTIALS from '../credentials.json';
 import 'babel-polyfill';
 
-const CONTENT_WARNINGS = ['Creator Chose Not To Use Archive Warnings', 'Graphic Depictions Of Violence', 'Major Character Death', 'No Archive Warnings Apply', 'Rape/Non-Con', 'Underage'];
+const CONTENT_WARNINGS = ['Choose Not To Use Archive Warnings', 'Graphic Depictions Of Violence', 'Major Character Death', 'No Archive Warnings Apply', 'Rape/Non-Con', 'Underage'];
 const RELATIONSHIPS = ['F/F', 'F/M', 'Gen', 'M/M', 'Multi', 'Other'];
 const CONTENT_RATINGS = ['Not Rated', 'General Audiences', 'Teen And Up Audiences', 'Mature', 'Explicit'];
 const FINISHED = ['Complete Work', 'Work in Progress'];
@@ -43,7 +43,7 @@ describe('Given an instance of my library', function () {
     });
   });
 
-  describe.only('parseChapters', function () {
+  describe('parseChapters', function () {
     it ('should replace "Chapter Title" with the actual chapter title', async function (done) {
       this.timeout(15000);
 
@@ -61,7 +61,7 @@ describe('Given an instance of my library', function () {
     });
   });
 
-  describe('when I call worksFilter', function () {
+  describe.only('when I call worksFilter', function () {
     it ('should return a filtered list of works', async function (done) {
       this.timeout(15000);
 
@@ -92,11 +92,12 @@ describe('Given an instance of my library', function () {
 
       try {
         const response = await Library.worksFilter('Overwatch (Video Game)', {
-          page: 2
+          page: 1
         });
 
         expect(response).to.be.a('object');
         expect(response.data.items).to.have.length(20);
+        expect(response.data.page).to.eq(1);
 
         done();
       } catch (err) {

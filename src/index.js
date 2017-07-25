@@ -638,6 +638,7 @@ export default class AO3 {
       }
     });
     const endpoint = `${AO3.site}/users/${AO3.user}/subscriptions`;
+
     try {
       return await instance.post(endpoint, params, settings);
     } catch (err) {
@@ -848,6 +849,7 @@ export default class AO3 {
     if (!AO3.user) {
       await AO3.login(AO3.credentials);
     }
+
     const endpoint = chapterId ? `${AO3.site}/works/${workId}/chapters/${chapterId}` : `${AO3.site}/works/${workId}/navigate`;
 
     try {
@@ -879,10 +881,10 @@ export default class AO3 {
   // tags/:fandom/works?{query}
   static async tags(fandom, query = {}) {
     const page = has(query, 'page') ? query.page : 0;
-    const endpoint = `${AO3.site}/tags/${fandom}/works?${qs.stringify(query)}`;
-    const response = await instance.get(endpoint);
+    const endpoint = `${AO3.site}/tags/${fandom}/works`;
+    const response = await instance.get(endpoint, qs.stringify(query));
     const $ = cheerio.load(response.data);
-    const data = AO3.parseWorks($);
+    const data = AO3._parseWorks($);
     const found = $('div#main').find('h2.heading').text().match(/([^of])+(?=Works)/, '')[0].trim();
 
     return {
@@ -906,10 +908,12 @@ export default class AO3 {
   collectionsSearch() { }
 
   static _formatWorksFilterEndpoint(query) {
-    let endpoint = `${AO3.site}/works?utf8=%E2%9C%93`;
-    const { tag_id, term } = query;
-    delete query.tag_id;
-    query = qs.stringify({ commit: 'Sort and Filter', work_search: term, tag_id });
+    let endpoint = `${AO3.site}/works`;
+    query = qs.stringify({
+      utf8: '✓',
+      commit: 'Sort and Filter',
+      work_search: query
+    });
     return `${endpoint}&${query}`;
   }
 
@@ -937,20 +941,23 @@ export default class AO3 {
   //    language_id: '1',
   //    complete: [ '0', '1' ] }
 
-  static async worksFilter(tag, query = {}) {
+  static async worksFilter(tag, query = {}) { // NOTE: requesting second page switches the endpoint to tag
     try {
-      Object.assign(query, { tag_id: tag });
       const endpoint = AO3._formatWorksFilterEndpoint(query);
 
       const response = await instance.get(endpoint, {
         timeout: 3000
       });
 
+      console.log(query);
+
       const $ = cheerio.load(response.data);
-      const page = has(query, 'page') ? query.page : 0;
+      const page = parseInt($('ol.pagination').find('span.current').text(), 10);
       const found = $('div#main').find('h2.heading').text().match(/([^of])+(?=Works)/, '')[0].trim();
 
-      const data = AO3.parseWorks($);
+      console.log(page);
+
+      const data = AO3._parseWorks($);
 
       return {
         meta: AO3.getResponseMeta(response),
@@ -991,7 +998,7 @@ export default class AO3 {
       const response = await instance.get(endpoint);
       const $ = cheerio.load(response.data);
       const found = parseInt($('#main').find('h3.heading').text(), 10);
-      const data = AO3.parseWorks($);
+      const data = AO3._parseWorks($);
       return {
         meta: AO3.getResponseMeta(response),
         data: {
@@ -1006,7 +1013,7 @@ export default class AO3 {
     }
   }
 
-  static parseWorks($) {
+  static _parseWorks($) {
     try {
       return $('ol.work').find('li.work').map(function (i, el) {
         const heading = $(this).find('h4.heading').find('a');
@@ -1034,9 +1041,15 @@ export default class AO3 {
 
   // content rating, relationships, content warnings, finished?
   static parseRequiredTags($, el) {
-    const [content_rating, content_warnings, relationships, finished] = $(el).find('ul.required-tags').find('li').map((i, el) => {
+    let [content_rating, content_warnings, relationships, finished] = $(el).find('ul.required-tags').find('li').map((i, el) => {
       return $(el).find('span').attr('title');
     }).get();
+
+    if (relationships.includes(',')) {
+      relationships = relationships.split(',');
+    } else {
+      relationships = [relationships];
+    }
 
     return {
       content_rating, relationships, content_warnings, finished
